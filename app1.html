@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous"></script>
+    <title>Hello World</title>
+    <style>
+        .container {
+  border: 2px solid #dedede;
+  background-color: #f1f1f1;
+  border-radius: 5px;
+  padding: 10px;
+  margin: 10px 0;
+  min-width: 100px;
+}
+#messageFormArea{
+    display:none;
+}
+.msg {
+  border: 2px solid grey;
+  background-color: white;
+  border-radius: 5px;
+  padding: 10px;
+  margin: 10px 0;
+}
+h1{
+color: red
+}
+h2{
+color: green
+}
+    </style>
+</head>
+
+<body>
+    <div id='userFormArea' style="float:left;margin:0 20%;position: relative;background-color: silver">
+        <h1>Enter Username</h1>
+
+        <form id='userForm'>
+            <label>Enter Username: </label><br>
+            <input type="text" id='userName'><br><br>
+            <input type='submit' value='Submit'>
+    </div>
+    </form>
+
+    </div>
+    <div id='messageFormArea' style="float:right;margin:0 40%;position: relative;">
+        <h1>Chat Window</h1>
+        <div class='container' id='chat'></div>
+        <form id='messageForm'>
+            <label>Enter Message: </label><br>
+            <textarea id='message'></textarea><br><br>
+            <input type='submit' value='Send Message'>
+    </div>
+    </form>
+    <div id='users' style="position:fixed">
+
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript">
+        // MADE IN JAVASCRIPT
+        window.onload = function () {
+            var socket = io.connect();
+            var messageForm = document.getElementById('messageForm');
+            var message = document.getElementById('message');
+            var chat = document.getElementById('chat');
+            var messageFormArea = document.getElementById('messageFormArea');
+
+            var userForm = document.getElementById('userForm');
+            var userName = document.getElementById('userName');
+
+            var userFormArea = document.getElementById('userFormArea');
+            var users = document.getElementById('users');
+
+            userForm.addEventListener('submit', e => {
+                e.preventDefault();
+                socket.emit('new user', userName.value, function (data) {
+                    if (data) {
+                        userFormArea.style.display = "none";
+                        messageFormArea.style.display = "block";
+                    }
+                });
+                message.value = '';
+
+            });
+
+            socket.on('get users', function (data) {
+                var html = '';
+                console.log(data);
+                for (let i = 0; i < data.length; i++) {
+                    html += '<li>' + data[i] + '</li>'
+                    // $users.append('<li>' + data[i] + '</li>');
+                }
+                // users.html(html);
+                users.innerHTML = html
+            })
+            messageForm.addEventListener('submit', e => {
+                e.preventDefault();
+
+                socket.emit('send message', message.value);
+
+                document.getElementById('message').value = '';
+
+            });
+
+            socket.on('new message', function (data) {
+                // chat.append(data.username + ': ' + data.msg );
+                var msgs;
+                msgs = '<div class="msg">' + data.username + ': ' + data.msg + '</div>'
+                chat.innerHTML += msgs
+            });
+
+            /* alternate of window.onLoad function
+                (function(){
+            
+                })()
+                making and calling it combined.
+            
+            
+                // shortcut to use minimum getElementById:-
+            
+                (function(){
+                    var element=function(id){
+                        return document.getElementById(id);
+                    }
+                    //GET ELEMENTS
+                    var status=element('status);
+                    var userForm=element('userForm');
+                    var messageForm=element('messageForm);
+                })()
+            */
+        }
+
+
+    </script>
+
+</body>
+
+</html>
